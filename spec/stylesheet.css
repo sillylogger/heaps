@@ -21,3 +21,18 @@ div.boxes {
   /* becomes position: relative */
 }
 
+div.dot {
+  width: 1px;
+  height: 1px;
+  background: black;
+  position: absolute;
+  z-index: 99;
+}
+
+div.occupied {
+  width: 1px;
+  height: 1px;
+  background: yellow;
+  position: absolute;
+  z-index: 99;
+}

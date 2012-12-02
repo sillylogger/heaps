@@ -3,7 +3,7 @@
 
   (function($) {
     $.heap = function(el, selector, options) {
-      var coordinateToPosition, initializeCanvas, isFit, occupyPosition, place, positionToCoordinate, scoreCoordinate, scoreCoordinates,
+      var columnIsFit, coordinateToPosition, initializeCanvas, isFit, occupyPosition, place, positionToCoordinate, scoreCoordinate, scoreCoordinates,
         _this = this;
       this.el = el;
       this.$el = $(el);
@@ -45,16 +45,22 @@
       };
       this.findBestPosition = function(width, height) {
         var availableCoordinates, currentIsFit, lastIsFit, position, x, y, _i, _j, _ref, _ref1, _ref2, _ref3;
-        lastIsFit = true;
         availableCoordinates = [];
         if (height > _this.height || width > _this.width) {
           return;
         }
         for (y = _i = 0, _ref = _this.height - height, _ref1 = _this.options.step; 0 <= _ref ? _i <= _ref : _i >= _ref; y = _i += _ref1) {
+          lastIsFit = false;
           for (x = _j = 0, _ref2 = _this.width - width, _ref3 = _this.options.step; 0 <= _ref2 ? _j <= _ref2 : _j >= _ref2; x = _j += _ref3) {
             position = [x, y];
-            if (currentIsFit = isFit(width, height, position)) {
+            if (lastIsFit && columnIsFit(width, height, position)) {
+              currentIsFit = true;
               availableCoordinates.push(positionToCoordinate(width, height, position));
+            } else if (isFit(width, height, position)) {
+              currentIsFit = true;
+              availableCoordinates.push(positionToCoordinate(width, height, position));
+            } else {
+              currentIsFit = false;
             }
             lastIsFit = currentIsFit;
           }
@@ -100,11 +106,22 @@
         }
         return true;
       };
+      columnIsFit = function(width, height, position) {
+        var left, top, y, _i, _ref, _ref1;
+        left = position[0] + width;
+        top = position[1];
+        for (y = _i = top, _ref = top + height, _ref1 = _this.options.step; top <= _ref ? _i <= _ref : _i >= _ref; y = _i += _ref1) {
+          if (!_this.canvas[left] || _this.canvas[left][y] === true) {
+            return false;
+          }
+        }
+        return true;
+      };
       this.debugPosition = function(position) {
-        return _this.$el.append($("<div class=\"dot\" title=\"available: " + position + "\"  style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
+        return _this.$el.append($("<div class=\"dot\" title=\"available: " + position + "\" style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
       };
       this.debugOccupiedPosition = function(position) {
-        return _this.$el.append($("<div class=\"occupied\" title=\"occupied: " + position + "\"  style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
+        return _this.$el.append($("<div class=\"occupied\" title=\"occupied: " + position + "\" style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
       };
       scoreCoordinates = function(a, b) {
         return scoreCoordinate(a) - scoreCoordinate(b);

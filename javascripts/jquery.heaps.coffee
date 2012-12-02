@@ -23,7 +23,7 @@
       if selector
         $(selector, @el).each place
 
-      @ # return this 
+      @ # return this
 
     place = (i, el) =>
       @place(el)
@@ -48,24 +48,33 @@
       $el.show()
 
     @findBestPosition = (width, height) =>
-      lastIsFit = true
       availableCoordinates = []
 
       if (height > @height || width > @width)
         return
 
       for y in [0..(@height - height)] by @options.step
+        lastIsFit = false
+
         for x in [0..(@width - width)] by @options.step
           position = [x,y]
 
-          if currentIsFit = isFit(width, height, position)
+          if lastIsFit && columnIsFit(width, height, position)
+            currentIsFit = true
             availableCoordinates.push positionToCoordinate(width, height, position)
 
-            # if currentIsFit != lastIsFit
-              # you found an edge after jumping by ten... go back by ones
-              # the problem with this is it only works in the axi of the inner loop
-              # betterCoordinates = @backupToEdge width, height, position
-              # availableCoordinates = availableCoordinates.concat betterCoordinates
+          else if isFit(width, height, position)
+            currentIsFit = true
+            availableCoordinates.push positionToCoordinate(width, height, position)
+
+          else
+            currentIsFit = false
+
+          # if currentIsFit != lastIsFit
+            # you found an edge after jumping by ten... go back by ones
+            # the problem with this is it only works in the axi of the inner loop
+            # betterCoordinates = @backupToEdge width, height, position
+            # availableCoordinates = availableCoordinates.concat betterCoordinates
 
           lastIsFit = currentIsFit
 
@@ -114,11 +123,20 @@
 
       true
 
+    columnIsFit = (width, height, position) =>
+      left = position[0] + width
+      top = position[1]
+
+      for y in [top..(top+height)] by @options.step
+        return false if (!@canvas[left] || @canvas[left][y] == true)
+
+      true
+
     @debugPosition = (position) =>
-      @$el.append $("<div class=\"dot\" title=\"available: #{position}\"  style=\"left: #{position[0]}px; top: #{position[1]}px;\"></div>")
+      @$el.append $("<div class=\"dot\" title=\"available: #{position}\" style=\"left: #{position[0]}px; top: #{position[1]}px;\"></div>")
 
     @debugOccupiedPosition = (position) =>
-      @$el.append $("<div class=\"occupied\" title=\"occupied: #{position}\"  style=\"left: #{position[0]}px; top: #{position[1]}px;\"></div>")
+      @$el.append $("<div class=\"occupied\" title=\"occupied: #{position}\" style=\"left: #{position[0]}px; top: #{position[1]}px;\"></div>")
 
     scoreCoordinates = (a, b) ->
       scoreCoordinate(a) - scoreCoordinate(b)

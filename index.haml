@@ -1,0 +1,87 @@
+!!! 5
+%html(lang="en")
+  %head
+    %meta(charset="utf-8")
+    %meta(http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1")
+    %meta(name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no")
+
+    %title heaps.js by sillylogger
+
+    /[if lt IE 9]
+      %script(src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.1/html5shiv.js")
+
+    %link(rel="stylesheet" href="stylesheets/styles.css")
+    %link(rel="stylesheet" href="stylesheets/pygment_trac.css")
+    %link(rel="stylesheet" href="stylesheets/heaps.css")
+
+  %body.wrapper
+    %header
+      %h1 heaps.js
+
+      %p.view
+        %a(href="https://github.com/sillylogger/heaps")
+          View the Project on GitHub
+          %small sillylogger/heaps
+
+      %ul
+        %li
+          %a(href="https://github.com/sillylogger/heaps/zipball/master")
+            Download
+            %strong ZIP File
+
+        %li
+          %a(href="https://github.com/sillylogger/heaps/tarball/master")
+            Download
+            %strong TAR Ball
+
+        %li
+          %a(href="https://github.com/sillylogger/heaps")
+            View on
+            %strong GitHub
+
+    %section
+      %p This is a jQuery plugin to layout a bunch of elements into a heap or any pattern can describe with a function.
+
+      %pre
+        %code $('#images').heapify('a.thumbnail')
+
+      %p does this:
+
+      %ul#heap.thumbnails
+        - Dir[ File.join(File.dirname(__FILE__), 'images', '*.jpg') ].each_with_index do |f, i|
+          - src = "images/#{File.basename(f)}"
+          %li
+            %a(href=src class="thumbnail size#{i}")
+              %img(src=src)
+
+      %p That heapify function iterates over the selected elements checking ever possible location within their parent.  This is a super expensive operation so I'm working on optimizations.  For the time being, the iterations use a default step of 10.  This means all the elements being layed out need to have dimentions that are multiples of 10 pixels or there will be gaps... sry.  This can be mitigated by wrapping elements and constraining their dimentions.
+
+    %footer
+      %p
+        This project is maintained by
+        %a(href="https://github.com/sillylogger")sillylogger
+      %p
+        %small
+          Hosted on GitHub Pages &mdash; Theme by
+          %a(href="https://github.com/orderedlist")orderedlist
+
+    -# %script(src="javascripts/scale.fix.js")
+    %script(src="javascripts/jquery.js")
+    %script(src="javascripts/jquery.heaps.js")
+
+    :javascript
+      $(window).load(function(){
+        var step = 10;
+
+        // normalize all images so fit on a 10x10 grid
+        $('#heap .thumbnail').each(function(i, el) {
+          var $el = $(el);
+          var height = $el.height();
+          $el.css({ height: height - (height % step) + 'px' });
+        });
+
+        var start = new Date().getTime()
+        $('#heap').heapify('li', { step: step });
+        var finish = new Date().getTime()
+        console.debug("Elapsed time is " + (finish - start).toString() + "ms");
+      });

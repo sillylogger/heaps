@@ -1,1 +1,0 @@
-{"body":"### Heaps\r\nThis is a jQuery plugin to layout a bunch of elements in a heap / clump / pile.\r\n\r\n```\r\n$('ul.images').heapify('li')\r\n```","note":"Don't delete this file! It's used internally to help with page regeneration.","name":"Heaps","tagline":"throwing dom around","google":""}

@@ -1,4 +1,4 @@
-#heap {
+ul.thumbnails {
   background: #f8f8f8;
   border-radius:5px;
   border:1px solid #e5e5e5;
@@ -7,15 +7,18 @@
   padding: 0;
 }
 
-#heap .thumbnail.size0 { width: 180px; }
-#heap .thumbnail.size1 { width: 180px; }
-#heap .thumbnail.size2 { width: 160px; }
-#heap .thumbnail.size3 { width: 160px; }
-#heap .thumbnail.size4 { width: 140px; }
-#heap .thumbnail.size5 { width: 140px; }
-#heap .thumbnail.size6 { width: 120px; }
-#heap .thumbnail.size7 { width: 120px; }
-#heap .thumbnail       { width: 100px; }
+.thumbnail.size1  {  width:  70px; }
+.thumbnail.size2  {  width:  80px; }
+.thumbnail.size3  {  width:  90px; }
+.thumbnail.size4  {  width: 100px; }
+.thumbnail.size5  {  width: 110px; }
+.thumbnail.size6  {  width: 120px; }
+.thumbnail.size7  {  width: 130px; }
+.thumbnail.size8  {  width: 140px; }
+.thumbnail.size9  {  width: 150px; }
+.thumbnail.size10 {  width: 160px; }
+.thumbnail.size11 {  width: 170px; }
+.thumbnail.size12 {  width: 180px; }
 
 /* stolen from twitter-bootstrap */
 
@@ -35,7 +38,7 @@
   clear: both;
 }
 
-#heap li {
+ul.thumbnails li {
   display: inline-block;
   padding: 4px;
   border: 1px solid #ddd;
@@ -51,7 +54,7 @@
           transition: all 0.5s ease-in-out;
 }
 
-#heap li:hover {
+ul.thumbnails li:hover {
   border-color: #0088cc;
   -webkit-box-shadow: 0 1px 4px rgba(0, 105, 214, 0.25);
      -moz-box-shadow: 0 1px 4px rgba(0, 105, 214, 0.25);

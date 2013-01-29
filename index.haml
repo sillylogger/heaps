@@ -42,19 +42,49 @@
     %section
       %p This is a jQuery plugin to layout a bunch of elements into a heap or any pattern can describe with a function.
 
-      %pre
-        %code $('#images').heapify('a.thumbnail')
+      %pre $('ul#images').heapify('li')
 
-      %p does this:
+      %p Uses the defaults and looks like this:
 
-      %ul#heap.thumbnails
-        - Dir[ File.join(File.dirname(__FILE__), 'images', '*.jpg') ].each_with_index do |f, i|
+      - images = Dir[ File.join(File.dirname(__FILE__), 'images', '*.jpg') ]
+      %ul#images.thumbnails
+        - images.each_with_index do |f, i|
           - src = "images/#{File.basename(f)}"
           %li
-            %a(href=src class="thumbnail size#{i}")
+            %a(href=src class="thumbnail size#{images.size - i}")
               %img(src=src)
 
-      %p That heapify function iterates over the selected elements checking ever possible location within their parent.  This is a super expensive operation so I'm working on optimizations.  For the time being, the iterations use a default step of 10.  This means all the elements being layed out need to have dimentions that are multiples of 10 pixels or there will be gaps... sry.  This can be mitigated by wrapping elements and constraining their dimentions.
+      %p You can specify a different scoring function to layout the images.  The default is distance from center, but what about the inverse:
+
+      %pre= "$('ul#repelling-images').heapify('li', {\n\tscoring: function(coordinate) { \n\t\treturn -1 * Math.sqrt( Math.pow(coordinate[0] - this.center[0], 2) + \n\t\t\t\t       Math.pow(coordinate[1] - this.center[1], 2));\n\t}\n});"
+
+      %ul#repelling-images.thumbnails
+        - images.each_with_index do |f, i|
+          - src = "images/#{File.basename(f)}"
+          %li
+            %a(href=src class="thumbnail size#{images.size - i}")
+              %img(src=src)
+
+      %hr
+
+      %h2 $(parent).heapify(selector, options)
+
+      %h3 parent
+      %p Some DOM element with a width &amp; height.
+
+      %h3 selector
+      %p A CSS selector of items to be absolutely positioned within the parent.
+
+      %h3 options
+
+      %dl
+        %dt.code options.step = 10
+        %dd The granularity of item positioning. <code>1px</code> granularity is computationally intensive, thus the default step is <code>10px</code> until the algorithm is improved significantly.
+
+        %dt.code options.scoring = function(coordinate) { }
+        %dd
+          This function is used to score each coordinate within the <code>parent</code>. This each coordinate is a pair of <code>[x,y]</code>.  The function is called within the scope of the heap and thus has access to <code>this.center</code> (a coordinate), <code>this.width</code>, and <code>this.height</code>.
+
 
     %footer
       %p
@@ -65,7 +95,7 @@
           Hosted on GitHub Pages &mdash; Theme by
           %a(href="https://github.com/orderedlist")orderedlist
 
-    -# %script(src="javascripts/scale.fix.js")
+    %script(src="javascripts/scale.fix.js")
     %script(src="javascripts/jquery.js")
     %script(src="javascripts/jquery.heaps.js")
 
@@ -74,14 +104,23 @@
         var step = 10;
 
         // normalize all images so fit on a 10x10 grid
-        $('#heap .thumbnail').each(function(i, el) {
+        $('.thumbnail').each(function(i, el) {
           var $el = $(el);
           var height = $el.height();
           $el.css({ height: height - (height % step) + 'px' });
         });
 
-        var start = new Date().getTime()
-        $('#heap').heapify('li', { step: step });
-        var finish = new Date().getTime()
-        console.debug("Elapsed time is " + (finish - start).toString() + "ms");
+        $('#images').heapify('li', { step: step });
+
+        $('#repelling-images').heapify('li', { step: step, scoring: function(coordinate) {
+          return -1 * Math.sqrt(
+            Math.pow(coordinate[0] - this.center[0], 2) +
+            Math.pow(coordinate[1] - this.center[1], 2)
+          );
+        }});
+
+        $('#line-images').heapify('li', { step: step, scoring: function(coordinate) {
+            return Math.abs(coordinate[0] - this.center[0]);
+          }
+        });
       });

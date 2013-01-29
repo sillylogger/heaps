@@ -44,36 +44,36 @@
     </header>
     <section>
       <p>This is a jQuery plugin to layout a bunch of elements into a heap or any pattern can describe with a function.</p>
-      <pre><code>$('#images').heapify('a.thumbnail')</code></pre>
-      <p>does this:</p>
-      <ul class='thumbnails' id='heap'>
+      <pre>$('ul#images').heapify('li')</pre>
+      <p>Uses the defaults and looks like this:</p>
+      <ul class='thumbnails' id='images'>
         <li>
-          <a class='thumbnail size0' href='images/belgium-brussels.jpg'>
+          <a class='thumbnail size12' href='images/belgium-brussels.jpg'>
             <img src='images/belgium-brussels.jpg'>
           </a>
         </li>
         <li>
-          <a class='thumbnail size1' href='images/cambodia-penom-phen-s-21.jpg'>
+          <a class='thumbnail size11' href='images/cambodia-penom-phen-s-21.jpg'>
             <img src='images/cambodia-penom-phen-s-21.jpg'>
           </a>
         </li>
         <li>
-          <a class='thumbnail size2' href='images/cambodia-siem-reap-angkor-wat.jpg'>
+          <a class='thumbnail size10' href='images/cambodia-siem-reap-angkor-wat.jpg'>
             <img src='images/cambodia-siem-reap-angkor-wat.jpg'>
           </a>
         </li>
         <li>
-          <a class='thumbnail size3' href='images/cambodia-siem-reap-field.jpg'>
+          <a class='thumbnail size9' href='images/cambodia-siem-reap-field.jpg'>
             <img src='images/cambodia-siem-reap-field.jpg'>
           </a>
         </li>
         <li>
-          <a class='thumbnail size4' href='images/cambodia-siem-reap-market.jpg'>
+          <a class='thumbnail size8' href='images/cambodia-siem-reap-market.jpg'>
             <img src='images/cambodia-siem-reap-market.jpg'>
           </a>
         </li>
         <li>
-          <a class='thumbnail size5' href='images/ireland-cork.jpg'>
+          <a class='thumbnail size7' href='images/ireland-cork.jpg'>
             <img src='images/ireland-cork.jpg'>
           </a>
         </li>
@@ -83,32 +83,110 @@
           </a>
         </li>
         <li>
-          <a class='thumbnail size7' href='images/malaysia-kuala-lumpur-islamic-museum.jpg'>
+          <a class='thumbnail size5' href='images/malaysia-kuala-lumpur-islamic-museum.jpg'>
             <img src='images/malaysia-kuala-lumpur-islamic-museum.jpg'>
           </a>
         </li>
         <li>
-          <a class='thumbnail size8' href='images/malaysia-putrajaya.jpg'>
+          <a class='thumbnail size4' href='images/malaysia-putrajaya.jpg'>
             <img src='images/malaysia-putrajaya.jpg'>
           </a>
         </li>
         <li>
-          <a class='thumbnail size9' href='images/netherlands-amsterdam.jpg'>
+          <a class='thumbnail size3' href='images/netherlands-amsterdam.jpg'>
             <img src='images/netherlands-amsterdam.jpg'>
           </a>
         </li>
         <li>
-          <a class='thumbnail size10' href='images/singapore-marina-barrage.jpg'>
+          <a class='thumbnail size2' href='images/singapore-marina-barrage.jpg'>
             <img src='images/singapore-marina-barrage.jpg'>
           </a>
         </li>
         <li>
-          <a class='thumbnail size11' href='images/usa-san-antonio.jpg'>
+          <a class='thumbnail size1' href='images/usa-san-antonio.jpg'>
             <img src='images/usa-san-antonio.jpg'>
           </a>
         </li>
       </ul>
-      <p>That heapify function iterates over the selected elements checking ever possible location within their parent.  This is a super expensive operation so I'm working on optimizations.  For the time being, the iterations use a default step of 10.  This means all the elements being layed out need to have dimentions that are multiples of 10 pixels or there will be gaps... sry.  This can be mitigated by wrapping elements and constraining their dimentions.</p>
+      <p>You can specify a different scoring function to layout the images.  The default is distance from center, but what about the inverse:</p>
+      <pre>$('ul#repelling-images').heapify('li', {&#x000A;	scoring: function(coordinate) { &#x000A;		return -1 * Math.sqrt( Math.pow(coordinate[0] - this.center[0], 2) + &#x000A;				       Math.pow(coordinate[1] - this.center[1], 2));&#x000A;	}&#x000A;});</pre>
+      <ul class='thumbnails' id='repelling-images'>
+        <li>
+          <a class='thumbnail size12' href='images/belgium-brussels.jpg'>
+            <img src='images/belgium-brussels.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size11' href='images/cambodia-penom-phen-s-21.jpg'>
+            <img src='images/cambodia-penom-phen-s-21.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size10' href='images/cambodia-siem-reap-angkor-wat.jpg'>
+            <img src='images/cambodia-siem-reap-angkor-wat.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size9' href='images/cambodia-siem-reap-field.jpg'>
+            <img src='images/cambodia-siem-reap-field.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size8' href='images/cambodia-siem-reap-market.jpg'>
+            <img src='images/cambodia-siem-reap-market.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size7' href='images/ireland-cork.jpg'>
+            <img src='images/ireland-cork.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size6' href='images/ireland-howth.jpg'>
+            <img src='images/ireland-howth.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size5' href='images/malaysia-kuala-lumpur-islamic-museum.jpg'>
+            <img src='images/malaysia-kuala-lumpur-islamic-museum.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size4' href='images/malaysia-putrajaya.jpg'>
+            <img src='images/malaysia-putrajaya.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size3' href='images/netherlands-amsterdam.jpg'>
+            <img src='images/netherlands-amsterdam.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size2' href='images/singapore-marina-barrage.jpg'>
+            <img src='images/singapore-marina-barrage.jpg'>
+          </a>
+        </li>
+        <li>
+          <a class='thumbnail size1' href='images/usa-san-antonio.jpg'>
+            <img src='images/usa-san-antonio.jpg'>
+          </a>
+        </li>
+      </ul>
+      <hr>
+      <h2>$(parent).heapify(selector, options)</h2>
+      <h3>parent</h3>
+      <p>Some DOM element with a width &amp; height.</p>
+      <h3>selector</h3>
+      <p>A CSS selector of items to be absolutely positioned within the parent.</p>
+      <h3>options</h3>
+      <dl>
+        <dt class='code'>options.step = 10</dt>
+        <dd>The granularity of item positioning. <code>1px</code> granularity is computationally intensive, thus the default step is <code>10px</code> until the algorithm is improved significantly.</dd>
+        <dt class='code'>options.scoring = function(coordinate) { }</dt>
+        <dd>
+          This function is used to score each coordinate within the <code>parent</code>. This each coordinate is a pair of <code>[x,y]</code>.  The function is called within the scope of the heap and thus has access to <code>this.center</code> (a coordinate), <code>this.width</code>, and <code>this.height</code>.
+        </dd>
+      </dl>
     </section>
     <footer>
       <p>
@@ -122,6 +200,7 @@
         </small>
       </p>
     </footer>
+    <script src='javascripts/scale.fix.js'></script>
     <script src='javascripts/jquery.js'></script>
     <script src='javascripts/jquery.heaps.js'></script>
     <script>
@@ -130,16 +209,25 @@
           var step = 10;
         
           // normalize all images so fit on a 10x10 grid
-          $('#heap .thumbnail').each(function(i, el) {
+          $('.thumbnail').each(function(i, el) {
             var $el = $(el);
             var height = $el.height();
             $el.css({ height: height - (height % step) + 'px' });
           });
         
-          var start = new Date().getTime()
-          $('#heap').heapify('li', { step: step });
-          var finish = new Date().getTime()
-          console.debug("Elapsed time is " + (finish - start).toString() + "ms");
+          $('#images').heapify('li', { step: step });
+        
+          $('#repelling-images').heapify('li', { step: step, scoring: function(coordinate) {
+            return -1 * Math.sqrt(
+              Math.pow(coordinate[0] - this.center[0], 2) +
+              Math.pow(coordinate[1] - this.center[1], 2)
+            );
+          }});
+        
+          $('#line-images').heapify('li', { step: step, scoring: function(coordinate) {
+              return Math.abs(coordinate[0] - this.center[0]);
+            }
+          });
         });
       //]]>
     </script>

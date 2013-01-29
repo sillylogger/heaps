@@ -124,7 +124,11 @@
         return _this.$el.append($("<div class=\"occupied\" title=\"occupied: " + position + "\" style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
       };
       scoreCoordinates = function(a, b) {
-        return scoreCoordinate(a) - scoreCoordinate(b);
+        if (_this.options.scoring) {
+          return _this.options.scoring.call(_this, a) - _this.options.scoring.call(_this, b);
+        } else {
+          return scoreCoordinate(a) - scoreCoordinate(b);
+        }
       };
       scoreCoordinate = function(coordinate) {
         return Math.sqrt(Math.pow(coordinate[0] - _this.center[0], 2) + Math.pow(coordinate[1] - _this.center[1], 2));

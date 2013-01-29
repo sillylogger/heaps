@@ -138,8 +138,11 @@
     @debugOccupiedPosition = (position) =>
       @$el.append $("<div class=\"occupied\" title=\"occupied: #{position}\" style=\"left: #{position[0]}px; top: #{position[1]}px;\"></div>")
 
-    scoreCoordinates = (a, b) ->
-      scoreCoordinate(a) - scoreCoordinate(b)
+    scoreCoordinates = (a, b) =>
+      if @options.scoring
+        @options.scoring.call(@,a) - @options.scoring.call(@,b)
+      else
+        scoreCoordinate(a) - scoreCoordinate(b)
 
     scoreCoordinate = (coordinate) =>
       Math.sqrt(

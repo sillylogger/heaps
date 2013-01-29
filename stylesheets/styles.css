@@ -57,10 +57,13 @@ blockquote {
   font-style:italic;
 }
 
+.code, code, pre {
+  font-family: Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal;
+  color: #333;
+}
+
 code, pre {
-  font-family:Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal;
-  color:#333;
-  font-size:12px;
+  font-size: 12px
 }
 
 pre {
@@ -85,6 +88,10 @@ th, td {
 dt {
   color:#444;
   font-weight:700;
+}
+
+dt.code + dd {
+  margin-bottom: 15px;
 }
 
 th {

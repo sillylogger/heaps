@@ -8,6 +8,9 @@
     <!--[if lt IE 9]>
       <script src='//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.1/html5shiv.js'></script>
     <![endif]-->
+    <script src='javascripts/scale.fix.js'></script>
+    <script src='javascripts/jquery.js'></script>
+    <script src='javascripts/jquery.heaps.js'></script>
     <link href='stylesheets/styles.css' rel='stylesheet'>
     <link href='stylesheets/pygment_trac.css' rel='stylesheet'>
     <link href='stylesheets/heaps.css' rel='stylesheet'>
@@ -44,9 +47,9 @@
     </header>
     <section>
       <p>This is a jQuery plugin to layout a bunch of elements into a heap or any pattern can describe with a function.</p>
-      <pre>$('ul#images').heapify('li')</pre>
+      <pre>$('ul#ball-of-images').heapify('li')</pre>
       <p>Uses the defaults and looks like this:</p>
-      <ul class='thumbnails' id='images'>
+      <ul class='thumbnails' id='ball-of-images'>
         <li>
           <a class='thumbnail size12' href='images/belgium-brussels.jpg'>
             <img src='images/belgium-brussels.jpg'>
@@ -108,9 +111,27 @@
           </a>
         </li>
       </ul>
-      <p>You can specify a different scoring function to layout the images.  The default is distance from center, but what about the inverse:</p>
-      <pre>$('ul#repelling-images').heapify('li', {&#x000A;	scoring: function(coordinate) { &#x000A;		return -1 * Math.sqrt( Math.pow(coordinate[0] - this.center[0], 2) + &#x000A;				       Math.pow(coordinate[1] - this.center[1], 2));&#x000A;	}&#x000A;});</pre>
-      <ul class='thumbnails' id='repelling-images'>
+      <p>You can specify a different scoring function to layout the images.  The default is distance from center, but what if you pass a <code>scoring</code> option of:</p>
+      <pre class='concat-bottom'>$('ul#demo').heapify('li', { scoring:</pre>
+      <textarea class='concat code' id='function'>function(coordinate) {&#x000A;    return -1 * Math.abs(coordinate[1] - this.center[1]);&#x000A;}</textarea>
+      <pre class='concat-top'>});</pre>
+      <button class='btn btn-inverse' id='function-runner'>Evaluate</button>
+      <script>
+        //<![CDATA[
+          $('#function-runner').click(function(){
+            eval("var userGeneratedFunction = " + $('textarea#function').val());
+          
+            var demo = $('ul#demo');
+            demo.data('heap', null);
+          
+            demo.heapify('li', {
+              scoring: userGeneratedFunction
+            });
+          });
+        //]]>
+      </script>
+      <p>then you'll get something like this:</p>
+      <ul class='thumbnails' id='demo'>
         <li>
           <a class='thumbnail size12' href='images/belgium-brussels.jpg'>
             <img src='images/belgium-brussels.jpg'>
@@ -200,9 +221,6 @@
         </small>
       </p>
     </footer>
-    <script src='javascripts/scale.fix.js'></script>
-    <script src='javascripts/jquery.js'></script>
-    <script src='javascripts/jquery.heaps.js'></script>
     <script>
       //<![CDATA[
         $(window).load(function(){
@@ -215,19 +233,7 @@
             $el.css({ height: height - (height % step) + 'px' });
           });
         
-          $('#images').heapify('li', { step: step });
-        
-          $('#repelling-images').heapify('li', { step: step, scoring: function(coordinate) {
-            return -1 * Math.sqrt(
-              Math.pow(coordinate[0] - this.center[0], 2) +
-              Math.pow(coordinate[1] - this.center[1], 2)
-            );
-          }});
-        
-          $('#line-images').heapify('li', { step: step, scoring: function(coordinate) {
-              return Math.abs(coordinate[0] - this.center[0]);
-            }
-          });
+          $('#ball-of-images').heapify('li', { step: step });
         });
       //]]>
     </script>

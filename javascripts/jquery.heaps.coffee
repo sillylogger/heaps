@@ -14,8 +14,8 @@
 
       @$el.css({ position: 'relative' })
 
-      @width = @$el.width()
-      @height = @$el.height()
+      @width = @$el.outerWidth()
+      @height = @$el.outerHeight()
       @center = [ @width/2, @height/2 ]
 
       @canvas = initializeCanvas( @width, @height )

@@ -13,8 +13,8 @@
         _this.$el.css({
           position: 'relative'
         });
-        _this.width = _this.$el.width();
-        _this.height = _this.$el.height();
+        _this.width = _this.$el.outerWidth();
+        _this.height = _this.$el.outerHeight();
         _this.center = [_this.width / 2, _this.height / 2];
         _this.canvas = initializeCanvas(_this.width, _this.height);
         if (selector) {

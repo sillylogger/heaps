@@ -10,6 +10,10 @@
     /[if lt IE 9]
       %script(src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.1/html5shiv.js")
 
+    %script(src="javascripts/scale.fix.js")
+    %script(src="javascripts/jquery.js")
+    %script(src="javascripts/jquery.heaps.js")
+
     %link(rel="stylesheet" href="stylesheets/styles.css")
     %link(rel="stylesheet" href="stylesheets/pygment_trac.css")
     %link(rel="stylesheet" href="stylesheets/heaps.css")
@@ -42,23 +46,41 @@
     %section
       %p This is a jQuery plugin to layout a bunch of elements into a heap or any pattern can describe with a function.
 
-      %pre $('ul#images').heapify('li')
+      %pre $('ul#ball-of-images').heapify('li')
 
       %p Uses the defaults and looks like this:
 
       - images = Dir[ File.join(File.dirname(__FILE__), 'images', '*.jpg') ]
-      %ul#images.thumbnails
+      %ul#ball-of-images.thumbnails
         - images.each_with_index do |f, i|
           - src = "images/#{File.basename(f)}"
           %li
             %a(href=src class="thumbnail size#{images.size - i}")
               %img(src=src)
 
-      %p You can specify a different scoring function to layout the images.  The default is distance from center, but what about the inverse:
+      %p You can specify a different scoring function to layout the images.  The default is distance from center, but what if you pass a <code>scoring</code> option of:
 
-      %pre= "$('ul#repelling-images').heapify('li', {\n\tscoring: function(coordinate) { \n\t\treturn -1 * Math.sqrt( Math.pow(coordinate[0] - this.center[0], 2) + \n\t\t\t\t       Math.pow(coordinate[1] - this.center[1], 2));\n\t}\n});"
+      %pre.concat-bottom $('ul#demo').heapify('li', { scoring:
+      %textarea#function.concat.code= "function(coordinate) {\n    return -1 * Math.abs(coordinate[1] - this.center[1]);\n}"
+      %pre.concat-top });
 
-      %ul#repelling-images.thumbnails
+      %button#function-runner.btn.btn-inverse Evaluate
+
+      :javascript
+        $('#function-runner').click(function(){
+          eval("var userGeneratedFunction = " + $('textarea#function').val());
+
+          var demo = $('ul#demo');
+          demo.data('heap', null);
+
+          demo.heapify('li', {
+            scoring: userGeneratedFunction
+          });
+        });
+
+      %p then you'll get something like this:
+
+      %ul#demo.thumbnails
         - images.each_with_index do |f, i|
           - src = "images/#{File.basename(f)}"
           %li
@@ -95,9 +117,6 @@
           Hosted on GitHub Pages &mdash; Theme by
           %a(href="https://github.com/orderedlist")orderedlist
 
-    %script(src="javascripts/scale.fix.js")
-    %script(src="javascripts/jquery.js")
-    %script(src="javascripts/jquery.heaps.js")
 
     :javascript
       $(window).load(function(){
@@ -110,17 +129,5 @@
           $el.css({ height: height - (height % step) + 'px' });
         });
 
-        $('#images').heapify('li', { step: step });
-
-        $('#repelling-images').heapify('li', { step: step, scoring: function(coordinate) {
-          return -1 * Math.sqrt(
-            Math.pow(coordinate[0] - this.center[0], 2) +
-            Math.pow(coordinate[1] - this.center[1], 2)
-          );
-        }});
-
-        $('#line-images').heapify('li', { step: step, scoring: function(coordinate) {
-            return Math.abs(coordinate[0] - this.center[0]);
-          }
-        });
+        $('#ball-of-images').heapify('li', { step: step });
       });

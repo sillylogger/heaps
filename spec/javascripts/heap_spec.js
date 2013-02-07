@@ -22,23 +22,23 @@ describe('Heap', function(){
     expect( box.height() ).toEqual( 100 );
   });
 
+  function addSampleBoxes(el, n) {
+    for(var i = 0; i < n; i++) {
+      var b = box.clone();
+      b.data('index', i);
+      b.appendTo(el);
+    }
+
+    return $('.box', el);
+  }
+
   describe('el.heapify(boxes)', function(){
 
     var boxes, firstBox;
 
     beforeEach(function(){
-      for(var i = 0; i < 5; i++) {
-        var b = box.clone();
-        b.data('index', i);
-        b.appendTo(el);
-      }
-
-      expect( $('.box', el).size() ).toEqual(5);
-
+      boxes = addSampleBoxes(el, 5)
       el.heapify('.box');
-
-      boxes = $('.box', el);
-      expect( boxes.size() ).toEqual(5);
       firstBox = boxes.first();
     });
 
@@ -61,6 +61,29 @@ describe('Heap', function(){
         expect(validPositions).toContain( position );
       });
     });
+  });
+
+  describe('el.heapify(boxes, { sort: true/false })', function(){
+
+    var boxes, firstBox;
+
+    beforeEach(function(){
+      boxes = addSampleBoxes(el, 3);
+    });
+
+    it("places the largest boxes first", function(){
+      // reverse size order
+      boxes.eq(0).css({ width: '90px', height: '90px' });
+      boxes.eq(2).css({ width: '110px', height: '110px' });
+
+      el.heapify('.box', { sort: true });
+
+      // last should be in the center
+      var position = boxes.eq(2).position();
+      expect( Math.round(position.top) ).toEqual(90);
+      expect( Math.round(position.left) ).toEqual(90);
+    });
+
   });
 
   // helper functions

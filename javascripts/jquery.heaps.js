@@ -3,11 +3,12 @@
 
   (function($) {
     $.heap = function(el, selector, options) {
-      var columnIsFit, coordinateToPosition, initializeCanvas, isFit, occupyPosition, place, positionToCoordinate, scoreCoordinate, scoreCoordinates,
+      var bySize, columnIsFit, coordinateToPosition, initializeCanvas, isFit, occupyPosition, place, positionToCoordinate, scoreCoordinate, scoreCoordinates,
         _this = this;
       this.el = el;
       this.$el = $(el);
       this.init = function() {
+        var elements;
         _this.body = $('body');
         _this.options = $.extend({}, $.heap.defaultOptions, options);
         _this.$el.css({
@@ -18,7 +19,11 @@
         _this.center = [_this.width / 2, _this.height / 2];
         _this.canvas = initializeCanvas(_this.width, _this.height);
         if (selector) {
-          $(selector, _this.el).each(place);
+          elements = $(selector, el);
+          if (_this.options.sort) {
+            elements = elements.sort(bySize);
+          }
+          elements.each(place);
         }
         return _this;
       };
@@ -143,6 +148,14 @@
           }
         }
         return canvas;
+      };
+      bySize = function(a, b) {
+        var $a, $b, areaA, areaB;
+        $a = $(a);
+        $b = $(b);
+        areaA = $a.width() * $a.height();
+        areaB = $b.width() * $b.height();
+        return areaB - areaA;
       };
       return this.init();
     };

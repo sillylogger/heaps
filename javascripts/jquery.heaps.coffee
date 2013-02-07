@@ -21,7 +21,9 @@
       @canvas = initializeCanvas( @width, @height )
 
       if selector
-        $(selector, @el).each place
+        elements = $(selector, el)
+        elements = elements.sort(bySize) if @options.sort
+        elements.each place
 
       @ # return this
 
@@ -159,6 +161,13 @@
           canvas[x][y] = false
 
       canvas
+
+    bySize = (a, b) ->
+      $a = $(a)
+      $b = $(b)
+      areaA = ($a.width() * $a.height())
+      areaB = ($b.width() * $b.height())
+      (areaB - areaA)
 
     # call init, and return the output
     @init()

@@ -104,9 +104,10 @@
         %dd The granularity of item positioning. <code>1px</code> granularity is computationally intensive, thus the default step is <code>10px</code> until the algorithm is improved significantly.
 
         %dt.code options.scoring = function(coordinate) { }
-        %dd
-          This function is used to score each coordinate within the <code>parent</code>. This each coordinate is a pair of <code>[x,y]</code>.  The function is called within the scope of the heap and thus has access to <code>this.center</code> (a coordinate), <code>this.width</code>, and <code>this.height</code>.
+        %dd This function is used to score each coordinate within the <code>parent</code>. This each coordinate is a pair of <code>[x,y]</code>.  The function is called within the scope of the heap and thus has access to <code>this.center</code> (a coordinate), <code>this.width</code>, and <code>this.height</code>.
 
+        %dt.code options.sort = false
+        %dd This flag will cause <code>heapify</code> to sort the selected elements by area &ndash; placing the larger element in the highest priority spots.
 
     %footer
       %p

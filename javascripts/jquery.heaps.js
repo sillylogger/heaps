@@ -3,27 +3,26 @@
 
   (function($) {
     $.heap = function(el, selector, options) {
-      var bySize, coordinateToPosition, isFit, occupyPosition, place, scoreCoordinate, scoreCoordinates, sortCoordinates,
+      var bySize, coordinateToPlacement, isFit, place, rectsIntersect, scoreCoordinate, scoreCoordinates, sortCoordinates,
         _this = this;
       this.el = el;
       this.$el = $(el);
       this.init = function() {
-        var elements, k, v, _i, _len, _ref;
+        var elements, height, width;
         _this.body = $('body');
         _this.options = $.extend({}, $.heap.defaultOptions, options);
         _this.$el.css({
           position: 'relative'
         });
-        _this.width = _this.$el.outerWidth();
-        _this.height = _this.$el.outerHeight();
-        _this.center = [_this.width / 2, _this.height / 2];
-        _this.sortedCoordinates = sortCoordinates(_this.width, _this.height);
-        _this.canvas = {};
-        _ref = _this.sortedCoordinates;
-        for (v = _i = 0, _len = _ref.length; _i < _len; v = ++_i) {
-          k = _ref[v];
-          _this.canvas[k] = v;
-        }
+        width = _this.$el.outerWidth();
+        height = _this.$el.outerHeight();
+        _this.top = 0;
+        _this.right = width;
+        _this.bottom = height;
+        _this.left = 0;
+        _this.center = [width / 2, height / 2];
+        _this.sortedCoordinates = sortCoordinates(width, height);
+        _this.placedElements = [];
         if (selector) {
           elements = $(selector, _this.el);
           if (_this.options.sort) {
@@ -37,71 +36,60 @@
         return _this.place(el);
       };
       this.place = function(el) {
-        var $el, height, position, width;
+        var $el, height, placement, width;
         $el = $(el);
         $el.hide();
         width = $el.outerWidth();
         height = $el.outerHeight();
-        position = _this.findBestPosition(width, height);
-        if (!position) {
+        placement = _this.findBestPlacement(width, height);
+        if (!placement) {
           return null;
         }
-        occupyPosition(width, height, position);
+        _this.placedElements.push(placement);
         $el.css({
           position: 'absolute',
-          left: position[0] + 'px',
-          top: position[1] + 'px'
+          left: placement.left + 'px',
+          top: placement.top + 'px'
         });
         return $el.show();
       };
-      this.findBestPosition = function(width, height) {
-        var coordinate, position, _i, _len, _ref;
-        if (height > _this.height || width > _this.width) {
-          return;
-        }
+      this.findBestPlacement = function(width, height) {
+        var coordinate, placement, _i, _len, _ref;
         _ref = _this.sortedCoordinates;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           coordinate = _ref[_i];
-          if (!coordinate) {
+          placement = coordinateToPlacement(width, height, coordinate);
+          if (placement.top < _this.top || placement.right > _this.right || placement.bottom > _this.bottom || placement.left < _this.left) {
             continue;
           }
-          position = coordinateToPosition(width, height, coordinate);
-          if (isFit(width, height, position)) {
-            return position;
+          if (isFit(placement)) {
+            return placement;
           }
         }
       };
-      occupyPosition = function(width, height, position) {
-        var left, top, x, y, _i, _j, _ref, _ref1, _ref2, _ref3;
-        left = position[0];
-        top = position[1];
-        for (x = _i = left, _ref = left + width, _ref1 = _this.options.step; left <= _ref ? _i < _ref : _i > _ref; x = _i += _ref1) {
-          for (y = _j = top, _ref2 = top + height, _ref3 = _this.options.step; top <= _ref2 ? _j < _ref2 : _j > _ref2; y = _j += _ref3) {
-            delete _this.sortedCoordinates[_this.canvas[[x, y]]];
-            _this.canvas[[x, y]] = false;
-          }
-        }
-        return null;
-      };
-      coordinateToPosition = function(width, height, coordinate) {
+      coordinateToPlacement = function(width, height, coordinate) {
         var x, y;
-        x = Math.floor(coordinate[0] - width / 2);
-        y = Math.floor(coordinate[1] - height / 2);
-        return [x - (x % _this.options.step), y - (y % _this.options.step)];
+        x = coordinate[0] - width / 2;
+        y = coordinate[1] - height / 2;
+        x = x - (x % _this.options.step);
+        y = y - (y % _this.options.step);
+        return {
+          top: y,
+          right: x + width - 1,
+          bottom: y + height - 1,
+          left: x
+        };
       };
-      isFit = function(width, height, position) {
-        var left, potentialPoint, top, x, y, _i, _j, _ref, _ref1, _ref2, _ref3;
-        left = position[0];
-        top = position[1];
-        for (x = _i = left, _ref = left + width, _ref1 = _this.options.step; left <= _ref ? _i < _ref : _i > _ref; x = _i += _ref1) {
-          for (y = _j = top, _ref2 = top + height, _ref3 = _this.options.step; top <= _ref2 ? _j < _ref2 : _j > _ref2; y = _j += _ref3) {
-            potentialPoint = _this.canvas[[x, y]];
-            if (potentialPoint == null) {
-              return false;
-            }
-            if (potentialPoint === false) {
-              return false;
-            }
+      rectsIntersect = function(placement, otherPlacement) {
+        return !(placement.right < otherPlacement.left || placement.bottom < otherPlacement.top || placement.left > otherPlacement.right || placement.top > otherPlacement.bottom);
+      };
+      isFit = function(placement) {
+        var otherPlacement, _i, _len, _ref;
+        _ref = _this.placedElements;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          otherPlacement = _ref[_i];
+          if (rectsIntersect(placement, otherPlacement)) {
+            return false;
           }
         }
         return true;
@@ -109,8 +97,8 @@
       sortCoordinates = function(width, height) {
         var coordinates, x, y, _i, _j, _ref, _ref1, _ref2, _ref3;
         coordinates = [];
-        for (x = _i = 0, _ref = width - _this.options.step, _ref1 = _this.options.step; 0 <= _ref ? _i <= _ref : _i >= _ref; x = _i += _ref1) {
-          for (y = _j = 0, _ref2 = height - _this.options.step, _ref3 = _this.options.step; 0 <= _ref2 ? _j <= _ref2 : _j >= _ref2; y = _j += _ref3) {
+        for (x = _i = 0, _ref = width - _this.options.step, _ref1 = _this.options.step; 0 <= _ref ? _i < _ref : _i > _ref; x = _i += _ref1) {
+          for (y = _j = 0, _ref2 = height - _this.options.step, _ref3 = _this.options.step; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; y = _j += _ref3) {
             coordinates.push([x, y]);
           }
         }
@@ -125,12 +113,6 @@
       };
       scoreCoordinate = function(coordinate) {
         return Math.sqrt(Math.pow(coordinate[0] - _this.center[0], 2) + Math.pow(coordinate[1] - _this.center[1], 2));
-      };
-      this.debugPosition = function(position) {
-        return _this.$el.append($("<div class=\"dot\" title=\"available: " + position + "\" style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
-      };
-      this.debugOccupiedPosition = function(position) {
-        return _this.$el.append($("<div class=\"occupied\" title=\"occupied: " + position + "\" style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
       };
       bySize = function(a, b) {
         var $a, $b, areaA, areaB;

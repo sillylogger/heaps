@@ -95,11 +95,10 @@ describe('Heap', function(){
       heap = el.data('heap');
     });
 
-    describe('findBestPosition', function(){
+    describe('findBestPlacement', function(){
       it('returns a would-be centered box', function(){
-        expect( heap.findBestPosition(20,20) ).toEqual([140, 140]);
-        expect( heap.findBestPosition(300,300) ).toEqual([0, 0]);
-        expect( heap.findBestPosition(301,301) ).toBeUndefined();
+        expect( heap.findBestPlacement(20,20) ).toEqual({ top: 140, right: 159, bottom: 159, left: 140 });
+        expect( heap.findBestPlacement(300,300) ).toEqual({ top: 0, right: 299, bottom: 299, left:   0 });
       });
     });
   });

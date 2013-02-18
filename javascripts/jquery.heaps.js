@@ -3,12 +3,12 @@
 
   (function($) {
     $.heap = function(el, selector, options) {
-      var bySize, columnIsFit, coordinateToPosition, initializeCanvas, isFit, occupyPosition, place, positionToCoordinate, scoreCoordinate, scoreCoordinates,
+      var bySize, coordinateToPosition, isFit, occupyPosition, place, scoreCoordinate, scoreCoordinates, sortCoordinates,
         _this = this;
       this.el = el;
       this.$el = $(el);
       this.init = function() {
-        var elements;
+        var elements, k, v, _i, _len, _ref;
         _this.body = $('body');
         _this.options = $.extend({}, $.heap.defaultOptions, options);
         _this.$el.css({
@@ -17,9 +17,15 @@
         _this.width = _this.$el.outerWidth();
         _this.height = _this.$el.outerHeight();
         _this.center = [_this.width / 2, _this.height / 2];
-        _this.canvas = initializeCanvas(_this.width, _this.height);
+        _this.sortedCoordinates = sortCoordinates(_this.width, _this.height);
+        _this.canvas = {};
+        _ref = _this.sortedCoordinates;
+        for (v = _i = 0, _len = _ref.length; _i < _len; v = ++_i) {
+          k = _ref[v];
+          _this.canvas[k] = v;
+        }
         if (selector) {
-          elements = $(selector, el);
+          elements = $(selector, _this.el);
           if (_this.options.sort) {
             elements = elements.sort(bySize);
           }
@@ -49,84 +55,66 @@
         return $el.show();
       };
       this.findBestPosition = function(width, height) {
-        var availableCoordinates, currentIsFit, lastIsFit, position, x, y, _i, _j, _ref, _ref1, _ref2, _ref3;
-        availableCoordinates = [];
+        var coordinate, position, _i, _len, _ref;
         if (height > _this.height || width > _this.width) {
           return;
         }
-        for (y = _i = 0, _ref = _this.height - height, _ref1 = _this.options.step; 0 <= _ref ? _i <= _ref : _i >= _ref; y = _i += _ref1) {
-          lastIsFit = false;
-          for (x = _j = 0, _ref2 = _this.width - width, _ref3 = _this.options.step; 0 <= _ref2 ? _j <= _ref2 : _j >= _ref2; x = _j += _ref3) {
-            position = [x, y];
-            if (lastIsFit && columnIsFit(width, height, position)) {
-              currentIsFit = true;
-              availableCoordinates.push(positionToCoordinate(width, height, position));
-            } else if (isFit(width, height, position)) {
-              currentIsFit = true;
-              availableCoordinates.push(positionToCoordinate(width, height, position));
-            } else {
-              currentIsFit = false;
-            }
-            lastIsFit = currentIsFit;
+        _ref = _this.sortedCoordinates;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          coordinate = _ref[_i];
+          if (!coordinate) {
+            continue;
           }
-        }
-        if (availableCoordinates.length > 0) {
-          availableCoordinates.sort(scoreCoordinates);
-          return coordinateToPosition(width, height, availableCoordinates[0]);
+          position = coordinateToPosition(width, height, coordinate);
+          if (isFit(width, height, position)) {
+            return position;
+          }
         }
       };
       occupyPosition = function(width, height, position) {
-        var left, top, x, y, _i, _ref, _results;
-        left = position[0];
-        top = position[1];
-        _results = [];
-        for (x = _i = left, _ref = left + width; left <= _ref ? _i < _ref : _i > _ref; x = left <= _ref ? ++_i : --_i) {
-          _results.push((function() {
-            var _j, _ref1, _results1;
-            _results1 = [];
-            for (y = _j = top, _ref1 = top + height; top <= _ref1 ? _j < _ref1 : _j > _ref1; y = top <= _ref1 ? ++_j : --_j) {
-              _results1.push(this.canvas[x][y] = true);
-            }
-            return _results1;
-          }).call(_this));
-        }
-        return _results;
-      };
-      positionToCoordinate = function(width, height, position) {
-        return [Math.floor(position[0] + width / 2), Math.floor(position[1] + height / 2)];
-      };
-      coordinateToPosition = function(width, height, coordinate) {
-        return [Math.floor(coordinate[0] - width / 2), Math.floor(coordinate[1] - height / 2)];
-      };
-      isFit = function(width, height, position) {
         var left, top, x, y, _i, _j, _ref, _ref1, _ref2, _ref3;
         left = position[0];
         top = position[1];
         for (x = _i = left, _ref = left + width, _ref1 = _this.options.step; left <= _ref ? _i < _ref : _i > _ref; x = _i += _ref1) {
           for (y = _j = top, _ref2 = top + height, _ref3 = _this.options.step; top <= _ref2 ? _j < _ref2 : _j > _ref2; y = _j += _ref3) {
-            if (!_this.canvas[x] || _this.canvas[x][y] === true) {
+            delete _this.sortedCoordinates[_this.canvas[[x, y]]];
+            _this.canvas[[x, y]] = false;
+          }
+        }
+        return null;
+      };
+      coordinateToPosition = function(width, height, coordinate) {
+        var x, y;
+        x = Math.floor(coordinate[0] - width / 2);
+        y = Math.floor(coordinate[1] - height / 2);
+        return [x - (x % _this.options.step), y - (y % _this.options.step)];
+      };
+      isFit = function(width, height, position) {
+        var left, potentialPoint, top, x, y, _i, _j, _ref, _ref1, _ref2, _ref3;
+        left = position[0];
+        top = position[1];
+        for (x = _i = left, _ref = left + width, _ref1 = _this.options.step; left <= _ref ? _i < _ref : _i > _ref; x = _i += _ref1) {
+          for (y = _j = top, _ref2 = top + height, _ref3 = _this.options.step; top <= _ref2 ? _j < _ref2 : _j > _ref2; y = _j += _ref3) {
+            potentialPoint = _this.canvas[[x, y]];
+            if (potentialPoint == null) {
+              return false;
+            }
+            if (potentialPoint === false) {
               return false;
             }
           }
         }
         return true;
       };
-      columnIsFit = function(width, height, position) {
-        var left, top, y, _i, _ref, _ref1;
-        left = position[0] + width;
-        top = position[1];
-        for (y = _i = top, _ref = top + height, _ref1 = _this.options.step; top <= _ref ? _i <= _ref : _i >= _ref; y = _i += _ref1) {
-          if (!_this.canvas[left] || _this.canvas[left][y] === true) {
-            return false;
+      sortCoordinates = function(width, height) {
+        var coordinates, x, y, _i, _j, _ref, _ref1, _ref2, _ref3;
+        coordinates = [];
+        for (x = _i = 0, _ref = width - _this.options.step, _ref1 = _this.options.step; 0 <= _ref ? _i <= _ref : _i >= _ref; x = _i += _ref1) {
+          for (y = _j = 0, _ref2 = height - _this.options.step, _ref3 = _this.options.step; 0 <= _ref2 ? _j <= _ref2 : _j >= _ref2; y = _j += _ref3) {
+            coordinates.push([x, y]);
           }
         }
-        return true;
-      };
-      this.debugPosition = function(position) {
-        return _this.$el.append($("<div class=\"dot\" title=\"available: " + position + "\" style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
-      };
-      this.debugOccupiedPosition = function(position) {
-        return _this.$el.append($("<div class=\"occupied\" title=\"occupied: " + position + "\" style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
+        return coordinates.sort(scoreCoordinates);
       };
       scoreCoordinates = function(a, b) {
         if (_this.options.scoring) {
@@ -138,16 +126,11 @@
       scoreCoordinate = function(coordinate) {
         return Math.sqrt(Math.pow(coordinate[0] - _this.center[0], 2) + Math.pow(coordinate[1] - _this.center[1], 2));
       };
-      initializeCanvas = function(width, height) {
-        var canvas, x, y, _i, _j;
-        canvas = [];
-        for (x = _i = 0; 0 <= width ? _i <= width : _i >= width; x = 0 <= width ? ++_i : --_i) {
-          canvas[x] = [];
-          for (y = _j = 0; 0 <= height ? _j <= height : _j >= height; y = 0 <= height ? ++_j : --_j) {
-            canvas[x][y] = false;
-          }
-        }
-        return canvas;
+      this.debugPosition = function(position) {
+        return _this.$el.append($("<div class=\"dot\" title=\"available: " + position + "\" style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
+      };
+      this.debugOccupiedPosition = function(position) {
+        return _this.$el.append($("<div class=\"occupied\" title=\"occupied: " + position + "\" style=\"left: " + position[0] + "px; top: " + position[1] + "px;\"></div>"));
       };
       bySize = function(a, b) {
         var $a, $b, areaA, areaB;

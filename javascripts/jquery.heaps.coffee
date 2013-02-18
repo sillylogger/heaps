@@ -7,6 +7,7 @@
 
     #fat arrow '=>' makes creating jq plugins much easier.
     @init = =>
+
       # we need to attach elements to the dom to get css styles
       @body = $ 'body'
 
@@ -18,10 +19,14 @@
       @height = @$el.outerHeight()
       @center = [ @width/2, @height/2 ]
 
-      @canvas = initializeCanvas( @width, @height )
+      @sortedCoordinates = sortCoordinates @width, @height
+
+      @canvas = {}
+      for k,v in @sortedCoordinates
+        @canvas[k] = v
 
       if selector
-        elements = $(selector, el)
+        elements = $(selector, @el)
         elements = elements.sort(bySize) if @options.sort
         elements.each place
 
@@ -38,6 +43,7 @@
       height = $el.outerHeight()
 
       position = @findBestPosition width, height
+
       return null unless position
       occupyPosition width, height, position
 
@@ -50,70 +56,36 @@
       $el.show()
 
     @findBestPosition = (width, height) =>
-      availableCoordinates = []
 
       if (height > @height || width > @width)
         return
 
-      for y in [0..(@height - height)] by @options.step
-        lastIsFit = false
+      for coordinate in @sortedCoordinates
+        continue unless coordinate # the coordinate may have been 'picked' out  of this array
 
-        for x in [0..(@width - width)] by @options.step
-          position = [x,y]
+        position = coordinateToPosition width, height, coordinate
 
-          if lastIsFit && columnIsFit(width, height, position)
-            currentIsFit = true
-            availableCoordinates.push positionToCoordinate(width, height, position)
-
-          else if isFit(width, height, position)
-            currentIsFit = true
-            availableCoordinates.push positionToCoordinate(width, height, position)
-
-          else
-            currentIsFit = false
-
-          # if currentIsFit != lastIsFit
-            # you found an edge after jumping by ten... go back by ones
-            # the problem with this is it only works in the axi of the inner loop
-            # betterCoordinates = @backupToEdge width, height, position
-            # availableCoordinates = availableCoordinates.concat betterCoordinates
-
-          lastIsFit = currentIsFit
-
-      if availableCoordinates.length > 0
-        availableCoordinates.sort scoreCoordinates
-        coordinateToPosition width, height, availableCoordinates[0]
-
-    # @backupToEdge = (width, height, position) =>
-    #   availableCoordinates = []
-
-    #   x = position[0]
-    #   y = position[1]
-    #   backToX = x - @options.step
-    #   backToY = y - @options.step
-
-    #   for dy in [y...backToY]
-    #     for dx in [x...backToX]
-    #       dPosition = [dx, dy]
-
-    #       if @isFit(width, height, dPosition)
-    #         availableCoordinates.unshift positionToCoordinate width, height, dPosition
-
-    #   availableCoordinates
+        if isFit width, height, position
+          return position
 
     occupyPosition = (width, height, position) =>
       left = position[0]
       top = position[1]
 
-      for x in [left...(left+width)]
-        for y in [top...(top+height)]
-          @canvas[x][y] = true
+      for x in [left...(left+width)] by @options.step
+        for y in [top...(top+height)] by @options.step
+          # @debugOccupiedPosition [x,y]
+          delete @sortedCoordinates[ @canvas[[x,y]] ]
+          @canvas[[x,y]] = false
 
-    positionToCoordinate = (width, height, position) =>
-      [ Math.floor(position[0] + width/2), Math.floor(position[1] + height/2) ]
+      null
 
     coordinateToPosition = (width, height, coordinate) =>
-      [ Math.floor(coordinate[0] - width/2), Math.floor(coordinate[1] - height/2) ]
+      x = Math.floor(coordinate[0] - width/2)
+      y = Math.floor(coordinate[1] - height/2)
+
+      # round to the closest grid position (in case half the width or height isn't on the grid)
+      [ x - (x % @options.step), y - (y % @options.step) ]
 
     isFit = (width, height, position) =>
       left = position[0]
@@ -121,24 +93,19 @@
 
       for x in [left...(left+width)] by @options.step
         for y in [top...(top+height)] by @options.step
-          return false if (!@canvas[x] || @canvas[x][y] == true)
+          potentialPoint = @canvas[[x,y]]
+          return false unless potentialPoint?
+          return false if potentialPoint == false
 
       true
 
-    columnIsFit = (width, height, position) =>
-      left = position[0] + width
-      top = position[1]
+    sortCoordinates = (width, height) =>
+      coordinates = []
+      for x in [0..(width-@options.step)] by @options.step
+        for y in [0..(height-@options.step)] by @options.step
+          coordinates.push [x,y]
 
-      for y in [top..(top+height)] by @options.step
-        return false if (!@canvas[left] || @canvas[left][y] == true)
-
-      true
-
-    @debugPosition = (position) =>
-      @$el.append $("<div class=\"dot\" title=\"available: #{position}\" style=\"left: #{position[0]}px; top: #{position[1]}px;\"></div>")
-
-    @debugOccupiedPosition = (position) =>
-      @$el.append $("<div class=\"occupied\" title=\"occupied: #{position}\" style=\"left: #{position[0]}px; top: #{position[1]}px;\"></div>")
+      coordinates.sort scoreCoordinates
 
     scoreCoordinates = (a, b) =>
       if @options.scoring
@@ -152,15 +119,11 @@
         Math.pow(coordinate[1] - @center[1], 2)
       )
 
-    initializeCanvas = (width, height) ->
-      canvas = []
+    @debugPosition = (position) =>
+      @$el.append $("<div class=\"dot\" title=\"available: #{position}\" style=\"left: #{position[0]}px; top: #{position[1]}px;\"></div>")
 
-      for x in [0..width]
-        canvas[x] = []
-        for y in [0..height]
-          canvas[x][y] = false
-
-      canvas
+    @debugOccupiedPosition = (position) =>
+      @$el.append $("<div class=\"occupied\" title=\"occupied: #{position}\" style=\"left: #{position[0]}px; top: #{position[1]}px;\"></div>")
 
     bySize = (a, b) ->
       $a = $(a)
@@ -190,7 +153,6 @@
         # (element.data 'heap').place( el );
 
         $el.data 'heap', new $.heap el, selector, options
-
 
   undefined
 
